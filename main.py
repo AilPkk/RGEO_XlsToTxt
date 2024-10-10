@@ -71,8 +71,3 @@ for row in TULP[1:]:
         file_path = WindowsPath(file_path.replace('"', ''))
         with open(file_path, "w", encoding='ANSI') as f:
             f.write("".join(print_list))
-
-
-
-
-
