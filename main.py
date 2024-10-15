@@ -14,12 +14,13 @@ out_path = work_folder_path+"\\pa\\\""
 xls_path = WindowsPath(xls_path.replace('"', ''))
 os.makedirs(work_folder_path+"/pa", exist_ok=True)
 
-#load workbook sheets as tables
+# Load workbook sheets as tables
 workbook = load_workbook(xls_path, read_only=True, data_only=True)
 TULP = []
 KIHID = []
+LABOR = []
 
-sheet = workbook["TULP"]
+sheet = workbook["TULP"] # There must be a more elaborate way of doing it, but I'm in hurry
 for row in sheet.values:
     row = ['' if x is None else x for x in row]
     try:
@@ -29,15 +30,20 @@ for row in sheet.values:
         pass # Bad stuff
     TULP.append(list(row[2:]))
 
-sheet = workbook["KIHID"] #There is a more elaborate way of doing it, but I'm in hurry
+sheet = workbook["KIHID"]
 for row in sheet.values:
     row = ['' if x is None else x for x in row]
     del row[4]
     KIHID.append(list(row))
 
+sheet = workbook["LABOR"]
+for row in sheet.values:
+    row = ['' if x is None else x for x in row]
+    LABOR.append(list(row))
+
 workbook.close()
 
-#parse the tables and output pa.txt
+# parse the tables and output pa.txt
 # add header
 for row in TULP[1:]:
     if row[1] != "":
@@ -53,11 +59,11 @@ for row in TULP[1:]:
                           'X koordinaat:X=%s\n' % str(row[7]) +
                           'Y koordinaat:Y=%s\n' % str(row[8]) +
                           'Pikett:%s\n' % str(row[9]) +
-                          'Asukoht tee telje suhtes:%s\n' % str(row[10]) +
-                          '**KIHID\n'
+                          'Asukoht tee telje suhtes:%s\n' % str(row[10])
                           )
 
-# add layers
+        # add layers
+        print_list.append('**KHID\n')
         for kiht in KIHID:
             if kiht[0] == pa_name:
                 print_list.append('Kiht:%s\n' % str(kiht[1]) +
@@ -65,7 +71,23 @@ for row in TULP[1:]:
                                   'Kirjeldus:%s\n' % str(kiht[4]) +
                                   'Geoindeks:%s\n' % str(kiht[3])
                                   )
-        print_list.append('**LABOR\n**Lopp')
+
+        # add lab data
+        print_list.append('**LABOR\n')
+        for proov in LABOR:
+            if proov[0] == pa_name:
+                if proov[3] == 'n':
+                    print_list.append('Proovi nr:%s%%\n' % str(proov[9]) +
+                                      'Proovi sügavus:%s\n' % str(proov[5]) +
+                                      'Proovi liik:n\n' # its already hardcoded in if statement
+                )
+                elif proov[3] == 'k':
+                    print_list.append('Proovi nr:%s\n' % str(proov[1]) +
+                                      'Proovi sügavus:%s-%s\n' % (str(proov[5]), str(proov[6])) +
+                                      'Proovi liik:k\n'
+                    )
+
+        print_list.append('**Lopp')
 
         file_path = out_path+pa_name+".txt"
         file_path = WindowsPath(file_path.replace('"', ''))
